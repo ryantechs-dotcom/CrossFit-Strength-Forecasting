@@ -313,3 +313,49 @@ stages:
       hash: md5
       md5: 61d24718c0f5c6e87c3156b27664ae2d
       size: 485
+  automl_pycaret:
+    cmd: python src/automl_pycaret.py
+    deps:
+    - path: data/processed/crossfit_features.csv
+      hash: md5
+      md5: 0201d073db1c14c0092108fb29167aef
+      size: 2882888
+    - path: src/automl_pycaret.py
+      hash: md5
+      md5: 738094c30a6dab4b84e6e6e2f51e474f
+      size: 12533
+    params:
+      params.yaml:
+        automl_pycaret.fold: 5
+        automl_pycaret.n_select: 3
+        automl_pycaret.session_id: 42
+        automl_pycaret.top_n_features: 3
+    outs:
+    - path: outputs/automl/pycaret_feature_importance_all.png
+      hash: md5
+      md5: c6c29402ae839d3cf10133c1f059463d
+      size: 29202
+    - path: outputs/automl/pycaret_feature_importance_top.png
+      hash: md5
+      md5: 06d0cd77192cac9f9c97d9cb092706ea
+      size: 13732
+    - path: outputs/automl/pycaret_residuals_all.png
+      hash: md5
+      md5: 4aeba15ba3be92c04a944f1ba0dce55e
+      size: 104155
+    - path: outputs/automl/pycaret_residuals_top.png
+      hash: md5
+      md5: 9f9c98ece7370b36009acdf242c23a3d
+      size: 126238
+    - path: reports/automl_pycaret_leaderboard_all.csv
+      hash: md5
+      md5: eccc475cea247143a3ca506565c38916
+      size: 1605
+    - path: reports/automl_pycaret_leaderboard_top_features.csv
+      hash: md5
+      md5: 6c7ec960637d6720bf80b100d403f7da
+      size: 1623
+    - path: reports/automl_pycaret_summary.txt
+      hash: md5
+      md5: a1aaa7b11be172b472118b912902cf89
+      size: 1261
