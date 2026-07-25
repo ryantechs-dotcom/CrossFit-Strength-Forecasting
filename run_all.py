@@ -182,6 +182,11 @@ def main():
     # --- Feature version comparison (v1 vs v2 Feast feature sets, via MLflow) ---
     run(["dvc", "repro", "compare"])
 
+    # --- Assignment #3: AutoML (PyCaret + H2O), run on data/processed/crossfit_features.csv ---
+    run(["dvc", "repro", "automl_pycaret"])
+    run(["dvc", "repro", "automl_h2o"])
+    run(["dvc", "repro", "automl_compare"])
+
     # --- Snapshot the final pipeline state ---
     run(["git", "add", "dvc.lock"], allow_fail=True)
 
@@ -193,7 +198,7 @@ def main():
                 "git",
                 "commit",
                 "-m",
-                "Full pipeline run: experiments, evaluation, and comparison",
+                "Full pipeline run: experiments, evaluation, comparison, and AutoML",
             ]
         )
     else:

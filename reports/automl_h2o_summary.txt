@@ -1,0 +1,25 @@
+H2O AutoML Summary
+==================================================
+Target: total_lift
+Leakage columns excluded: ['deadlift', 'candj', 'snatch', 'backsq']
+Seed: 42   nfolds: 5   max_runtime_secs: 300
+Wall-clock AutoML run time: 301.3s
+
+Best model: StackedEnsemble_AllModels_3_AutoML_1_20260725_95621 (stackedensemble)
+
+Top 3 rows of leaderboard (sorted by RMSE):
+                                                 model_id        rmse           mse         mae     rmsle  mean_residual_deviance
+0     StackedEnsemble_AllModels_3_AutoML_1_20260725_95621  150.166940  22550.109781  117.312442  0.157806            22550.109781
+1     StackedEnsemble_AllModels_2_AutoML_1_20260725_95621  150.234933  22570.535234  117.385871  0.157899            22570.535234
+2  StackedEnsemble_BestOfFamily_4_AutoML_1_20260725_95621  150.247026  22574.168759  117.401141  0.157905            22574.168759
+
+NOTE: the best model (StackedEnsemble_AllModels_3_AutoML_1_20260725_95621, stackedensemble) is a Stacked Ensemble and does not expose native variable importance -- this is expected H2O behavior, not an error. Feature importance below is instead taken from the best-ranked individual model that does support it: GBM_5_AutoML_1_20260725_95621 (leaderboard rank 4).
+
+Top-5 features by variable importance:
+  - gender
+  - weight
+  - height
+  - age
+  - howlong
+
+Full leaderboard saved to: reports/automl_h2o_leaderboard.csv

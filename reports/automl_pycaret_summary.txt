@@ -1,0 +1,37 @@
+PyCaret AutoML Summary
+==================================================
+Target: total_lift
+Leakage columns excluded: ['deadlift', 'candj', 'snatch', 'backsq']
+Session ID (seed): 42
+CV folds: 5
+
+--- Pass 1: All Features ---
+Best model (row 0 of leaderboard):
+Model       Light Gradient Boosting Machine
+MAE                                117.9753
+MSE                              22908.9538
+RMSE                               151.3458
+R2                                   0.6937
+RMSLE                                0.1594
+MAPE                                 0.1264
+TT (Sec)                              0.194
+
+Top-3 features by importance:
+  - weight: 1060.0000
+  - age: 827.0000
+  - height: 650.0000
+
+--- Pass 2: Top-3 Features Only ---
+Best model (row 0 of leaderboard):
+Model       Gradient Boosting Regressor
+MAE                            143.5157
+MSE                          33788.3305
+RMSE                           183.8124
+R2                               0.5484
+RMSLE                            0.1993
+MAPE                             0.1597
+TT (Sec)                          0.162
+
+Full leaderboards saved to:
+  reports/automl_pycaret_leaderboard_all.csv
+  reports/automl_pycaret_leaderboard_top_features.csv

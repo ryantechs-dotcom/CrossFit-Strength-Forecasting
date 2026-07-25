@@ -359,3 +359,33 @@ stages:
       hash: md5
       md5: a1aaa7b11be172b472118b912902cf89
       size: 1261
+  automl_h2o:
+    cmd: python src/automl_h2o.py
+    deps:
+    - path: data/processed/crossfit_features.csv
+      hash: md5
+      md5: 0201d073db1c14c0092108fb29167aef
+      size: 2882888
+    - path: src/automl_h2o.py
+      hash: md5
+      md5: 3fcdb274e85ba76e08fabc3070acc907
+      size: 10532
+    params:
+      params.yaml:
+        automl_h2o.max_runtime_secs: 300
+        automl_h2o.nfolds: 5
+        automl_h2o.seed: 42
+        automl_h2o.top_n_features: 5
+    outs:
+    - path: outputs/automl/h2o_varimp.png
+      hash: md5
+      md5: 1a029a22393ea5a956e7a29663547f20
+      size: 25252
+    - path: reports/automl_h2o_leaderboard.csv
+      hash: md5
+      md5: afbc9df8bffa2763c8971f407c9e37f2
+      size: 9574
+    - path: reports/automl_h2o_summary.txt
+      hash: md5
+      md5: 00ee5bd6612d93524ada94d22a63244b
+      size: 1430

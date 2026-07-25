@@ -29,3 +29,7 @@ pathspec<0.12
 
 # Code quality (reports/pylint_report.txt)
 pylint==3.2.6
+
+# --- Append the following to your existing requirements.txt ---
+pycaret==3.3.2
+h2o>=3.44.0

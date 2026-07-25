@@ -79,3 +79,57 @@ stages:
     outs:
       - reports/model_comparison.txt:
           cache: false
+
+  automl_pycaret:
+    cmd: python src/automl_pycaret.py
+    deps:
+      - src/automl_pycaret.py
+      - data/processed/crossfit_features.csv
+    params:
+      - automl_pycaret.session_id
+      - automl_pycaret.top_n_features
+      - automl_pycaret.n_select
+      - automl_pycaret.fold
+    outs:
+      - outputs/automl/pycaret_feature_importance_all.png
+      - outputs/automl/pycaret_residuals_all.png
+      - outputs/automl/pycaret_feature_importance_top.png
+      - outputs/automl/pycaret_residuals_top.png
+      - reports/automl_pycaret_summary.txt:
+          cache: false
+    metrics:
+      - reports/automl_pycaret_leaderboard_all.csv:
+          cache: false
+      - reports/automl_pycaret_leaderboard_top_features.csv:
+          cache: false
+
+  automl_h2o:
+    cmd: python src/automl_h2o.py
+    deps:
+      - src/automl_h2o.py
+      - data/processed/crossfit_features.csv
+    params:
+      - automl_h2o.max_runtime_secs
+      - automl_h2o.seed
+      - automl_h2o.nfolds
+      - automl_h2o.top_n_features
+    outs:
+      - outputs/automl/h2o_varimp.png
+      - reports/automl_h2o_summary.txt:
+          cache: false
+    metrics:
+      - reports/automl_h2o_leaderboard.csv:
+          cache: false
+
+  automl_compare:
+    cmd: python src/automl_compare.py
+    deps:
+      - src/automl_compare.py
+      - reports/automl_pycaret_leaderboard_all.csv
+      - reports/automl_pycaret_leaderboard_top_features.csv
+      - reports/automl_h2o_leaderboard.csv
+    params:
+      - automl_compare.assignment1_baseline
+    outs:
+      - reports/automl_comparison.txt:
+          cache: false

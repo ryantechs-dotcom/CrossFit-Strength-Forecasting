@@ -1,0 +1,36 @@
+artifact_path: file:///C:/Users/dsouz/OneDrive/Documents/uchicago/MLOps/athletes_dvc_project/mlruns/1/models/m-57c191ab2a2b4399b801b860d3e78ce7/artifacts
+flavors:
+  python_function:
+    data: model.ubj
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.11.9
+  xgboost:
+    code: null
+    data: model.ubj
+    model_class: xgboost.sklearn.XGBRegressor
+    model_format: ubj
+    xgb_version: 2.1.1
+is_signature_from_type_hint: false
+mlflow_version: 3.13.0
+model_id: m-57c191ab2a2b4399b801b860d3e78ce7
+model_size_bytes: 118439
+model_uuid: m-57c191ab2a2b4399b801b860d3e78ce7
+prompts: null
+run_id: 5f1915002e724a6bb0125e2b117b8d3d
+saved_input_example_info:
+  artifact_path: input_example.json
+  pandas_orient: split
+  serving_input_path: serving_input_example.json
+  type: dataframe
+signature:
+  inputs: '[{"type": "long", "name": "gender", "required": true}, {"type": "double",
+    "name": "age", "required": true}, {"type": "double", "name": "height", "required":
+    true}, {"type": "double", "name": "weight", "required": true}, {"type": "long",
+    "name": "howlong", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float32", "shape": [-1]}}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2026-07-25 14:07:44.141681'
