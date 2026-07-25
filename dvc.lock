@@ -389,3 +389,35 @@ stages:
       hash: md5
       md5: 00ee5bd6612d93524ada94d22a63244b
       size: 1430
+  automl_compare:
+    cmd: python src/automl_compare.py
+    deps:
+    - path: reports/automl_h2o_leaderboard.csv
+      hash: md5
+      md5: afbc9df8bffa2763c8971f407c9e37f2
+      size: 9574
+    - path: reports/automl_pycaret_leaderboard_all.csv
+      hash: md5
+      md5: eccc475cea247143a3ca506565c38916
+      size: 1605
+    - path: reports/automl_pycaret_leaderboard_top_features.csv
+      hash: md5
+      md5: 6c7ec960637d6720bf80b100d403f7da
+      size: 1623
+    - path: src/automl_compare.py
+      hash: md5
+      md5: 92437bc3b0196cc35bc4df33a6537e8d
+      size: 7198
+    params:
+      params.yaml:
+        automl_compare.assignment1_baseline:
+          model_name: FILL_IN
+          validation_metric_name: FILL_IN
+          validation_score:
+          training_time_seconds:
+          notes: 'Populate once Assignment #1 baseline numbers are provided.'
+    outs:
+    - path: reports/automl_comparison.txt
+      hash: md5
+      md5: 8c5c7feb6c9467b98e64faa954e2394e
+      size: 3348
