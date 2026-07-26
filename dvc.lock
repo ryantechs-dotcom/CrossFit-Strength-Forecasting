@@ -262,8 +262,8 @@ stages:
       size: 3228
     - path: params.yaml
       hash: md5
-      md5: 0f6183f7431aff6376b7c808269920b4
-      size: 1216
+      md5: 9e957a0dc95c14ed2e0823b01073e89e
+      size: 1245
     - path: random_seed.py
       hash: md5
       md5: 5c16e0e1e4e52dc762d76f61df9b87a3
@@ -322,14 +322,15 @@ stages:
       size: 2882888
     - path: src/automl_pycaret.py
       hash: md5
-      md5: 738094c30a6dab4b84e6e6e2f51e474f
-      size: 12533
+      md5: 08fe4b54f6a53aa5bbb48394a5584462
+      size: 13688
     params:
       params.yaml:
         automl_pycaret.fold: 5
         automl_pycaret.n_select: 3
         automl_pycaret.session_id: 42
-        automl_pycaret.top_n_features: 3
+        automl_pycaret.top_n_report: 5
+        automl_pycaret.top_n_rerun: 3
     outs:
     - path: outputs/automl/pycaret_feature_importance_all.png
       hash: md5
@@ -349,16 +350,16 @@ stages:
       size: 126238
     - path: reports/automl_pycaret_leaderboard_all.csv
       hash: md5
-      md5: eccc475cea247143a3ca506565c38916
+      md5: 31af220dc1bfa2fb846ca9acf5872da6
       size: 1605
     - path: reports/automl_pycaret_leaderboard_top_features.csv
       hash: md5
-      md5: 6c7ec960637d6720bf80b100d403f7da
-      size: 1623
+      md5: dcc702e3dd3a14b4fd261d77616866c7
+      size: 1618
     - path: reports/automl_pycaret_summary.txt
       hash: md5
-      md5: a1aaa7b11be172b472118b912902cf89
-      size: 1261
+      md5: 53d3290782b55108544601a88e5e5def
+      size: 1476
   automl_h2o:
     cmd: python src/automl_h2o.py
     deps:
