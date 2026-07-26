@@ -369,56 +369,69 @@ stages:
       size: 2882888
     - path: src/automl_h2o.py
       hash: md5
-      md5: 3fcdb274e85ba76e08fabc3070acc907
-      size: 10532
+      md5: 3d8095466c48928a831a7134e05dedcc
+      size: 16120
     params:
       params.yaml:
         automl_h2o.max_runtime_secs: 300
         automl_h2o.nfolds: 5
         automl_h2o.seed: 42
-        automl_h2o.top_n_features: 5
+        automl_h2o.top_n_report: 5
+        automl_h2o.top_n_rerun: 3
     outs:
-    - path: outputs/automl/h2o_varimp.png
+    - path: outputs/automl/h2o_varimp_all.png
       hash: md5
       md5: 1a029a22393ea5a956e7a29663547f20
       size: 25252
-    - path: reports/automl_h2o_leaderboard.csv
+    - path: outputs/automl/h2o_varimp_top.png
       hash: md5
-      md5: afbc9df8bffa2763c8971f407c9e37f2
-      size: 9574
+      md5: 0c86eb7a5c30330f39a4cf833750ebe1
+      size: 23310
+    - path: reports/automl_h2o_leaderboard_all.csv
+      hash: md5
+      md5: 6bead7e73a42192a6a1d7a1855bc6038
+      size: 7989
+    - path: reports/automl_h2o_leaderboard_top_features.csv
+      hash: md5
+      md5: c1b600e1f657f5591011dab10ad46c7f
+      size: 8448
     - path: reports/automl_h2o_summary.txt
       hash: md5
-      md5: 00ee5bd6612d93524ada94d22a63244b
-      size: 1430
+      md5: c1166c496a95d9b484c1c0bd98a9bd54
+      size: 2880
   automl_compare:
     cmd: python src/automl_compare.py
     deps:
-    - path: reports/automl_h2o_leaderboard.csv
+    - path: reports/automl_h2o_leaderboard_all.csv
       hash: md5
-      md5: afbc9df8bffa2763c8971f407c9e37f2
-      size: 9574
+      md5: 6bead7e73a42192a6a1d7a1855bc6038
+      size: 7989
+    - path: reports/automl_h2o_leaderboard_top_features.csv
+      hash: md5
+      md5: c1b600e1f657f5591011dab10ad46c7f
+      size: 8448
     - path: reports/automl_pycaret_leaderboard_all.csv
       hash: md5
-      md5: eccc475cea247143a3ca506565c38916
+      md5: 31af220dc1bfa2fb846ca9acf5872da6
       size: 1605
     - path: reports/automl_pycaret_leaderboard_top_features.csv
       hash: md5
-      md5: 6c7ec960637d6720bf80b100d403f7da
-      size: 1623
+      md5: dcc702e3dd3a14b4fd261d77616866c7
+      size: 1618
     - path: src/automl_compare.py
       hash: md5
-      md5: 92437bc3b0196cc35bc4df33a6537e8d
-      size: 7198
+      md5: 487d7af1d34da1b846a176932be12738
+      size: 10470
     params:
       params.yaml:
         automl_compare.assignment1_baseline:
-          model_name: FILL_IN
-          validation_metric_name: FILL_IN
+          model_name: XGBoost
+          validation_metric_name: RMSE
           validation_score:
           training_time_seconds:
           notes: 'Populate once Assignment #1 baseline numbers are provided.'
     outs:
     - path: reports/automl_comparison.txt
       hash: md5
-      md5: 8c5c7feb6c9467b98e64faa954e2394e
-      size: 3348
+      md5: 92c06cc3a835ce86e9f9598afd911f73
+      size: 6717
