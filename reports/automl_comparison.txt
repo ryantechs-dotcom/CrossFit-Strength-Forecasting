@@ -1,0 +1,84 @@
+AutoML Comparison Report
+============================================================
+
+--- Task 5: Top 3 Models by Validation Score - PyCaret ---
+
+[All features, sorted by R2]
+                                    Model       MAE         MSE      RMSE      R2   RMSLE    MAPE  TT (Sec)
+lightgbm  Light Gradient Boosting Machine  117.9753  22908.9538  151.3458  0.6937  0.1594  0.1264     0.248
+gbr           Gradient Boosting Regressor  118.7721  23007.7013  151.6770  0.6924  0.1601  0.1275     0.210
+xgboost         Extreme Gradient Boosting  121.2807  24228.5395  155.6441  0.6760  0.1640  0.1299     0.046
+
+[Top features only, sorted by R2]
+                                    Model       MAE         MSE      RMSE      R2   RMSLE    MAPE  TT (Sec)
+gbr           Gradient Boosting Regressor  143.5157  33788.3305  183.8124  0.5484  0.1993  0.1597     0.160
+lightgbm  Light Gradient Boosting Machine  143.2361  33890.8396  184.0931  0.5470  0.1992  0.1591     0.336
+xgboost         Extreme Gradient Boosting  145.9987  35257.3906  187.7671  0.5287  0.2029  0.1619     0.036
+
+Feature reduction effect on validation score (R2): DEGRADED (all=0.6937 -> top=0.5484, delta=-0.1453)
+
+--- Task 9: Top 3 H2O Models by Validation Score ---
+
+[All features, sorted by rmse ascending (lower is better)]
+                                                  model_id        rmse           mse         mae     rmsle  mean_residual_deviance  training_time_ms  predict_time_per_row_ms
+0     StackedEnsemble_AllModels_3_AutoML_1_20260726_171952  150.174950  22552.515669  117.324482  0.157825            22552.515669               742                 0.050776
+1     StackedEnsemble_AllModels_2_AutoML_1_20260726_171952  150.197365  22559.248554  117.354523  0.157858            22559.248554              1293                 0.041231
+2  StackedEnsemble_BestOfFamily_3_AutoML_1_20260726_171952  150.217439  22565.278964  117.388308  0.157901            22565.278964               625                 0.017952
+
+[Top features only, sorted by rmse ascending]
+                                                  model_id        rmse           mse         mae     rmsle  mean_residual_deviance  training_time_ms  predict_time_per_row_ms
+0     StackedEnsemble_AllModels_3_AutoML_2_20260726_172537  171.081567  29268.902625  135.125622  0.179388            29268.902625               594                 0.022548
+1  StackedEnsemble_BestOfFamily_4_AutoML_2_20260726_172537  171.120321  29282.164243  135.167475  0.179451            29282.164243               206                 0.019386
+2             GBM_grid_1_AutoML_2_20260726_172537_model_12  171.173256  29300.283578  135.217985  0.179588            29300.283578               510                 0.010505
+
+Feature reduction effect on validation score (rmse, lower=better): DEGRADED (all=150.1750 -> top=171.0816, delta=+20.9066)
+
+--- Task 6: Top 3 Models by Speed - PyCaret (TT (Sec) = training time) ---
+
+[All features]
+                             Model       MAE         MSE      RMSE      R2   RMSLE    MAPE  TT (Sec)
+dummy              Dummy Regressor  227.5976  74844.8016  273.5654 -0.0001  0.2991  0.2655     0.014
+omp    Orthogonal Matching Pursuit  166.3028  44267.8883  210.3897  0.4084  0.2252  0.1850     0.014
+br                  Bayesian Ridge  123.9999  25022.1008  158.1777  0.6655  0.1669  0.1330     0.016
+
+[Top features only]
+                             Model       MAE         MSE      RMSE      R2   RMSLE    MAPE  TT (Sec)
+omp    Orthogonal Matching Pursuit  166.3028  44267.8891  210.3897  0.4084  0.2252  0.1850     0.008
+en                     Elastic Net  158.9144  40593.1625  201.4729  0.4575  0.2168  0.1769     0.008
+ridge             Ridge Regression  158.9502  40590.7914  201.4673  0.4575  0.2167  0.1769     0.010
+
+Speed definition (PyCaret): 'TT (Sec)' is per-model TRAINING time during compare_models() cross-validation, as reported natively by PyCaret.
+
+--- Task 9: Top 3 H2O Models by Speed (training_time_ms) ---
+
+[All features]
+                                        model_id        rmse           mse         mae     rmsle  mean_residual_deviance  training_time_ms  predict_time_per_row_ms
+48  GBM_grid_1_AutoML_1_20260726_171952_model_31  203.078184  41240.748763  166.151788  0.225255            41240.748763                71                 0.001876
+40                GLM_1_AutoML_1_20260726_171952  158.196057  25025.992460  124.110474  0.166344            25025.992460               174                 0.000454
+14  GBM_grid_1_AutoML_1_20260726_171952_model_28  150.910169  22773.879190  117.924388  0.158707            22773.879190               301                 0.023932
+
+[Top features only]
+                                                   model_id        rmse           mse         mae     rmsle  mean_residual_deviance  training_time_ms  predict_time_per_row_ms
+43                           GLM_1_AutoML_2_20260726_172537  178.544403  31878.103819  141.204228  0.187354            31878.103819                39                 0.000362
+46     DeepLearning_grid_1_AutoML_2_20260726_172537_model_6  189.995220  36098.183437  151.269918  0.202427            36098.183437                86                 0.001693
+1   StackedEnsemble_BestOfFamily_4_AutoML_2_20260726_172537  171.120321  29282.164243  135.167475  0.179451            29282.164243               206                 0.019386
+
+Speed definition (H2O): 'training_time_ms' is per-model TRAINING time in milliseconds, as reported by h2o.automl.get_leaderboard(extra_columns=...).
+
+--- PyCaret vs. H2O AutoML Head-to-Head (All Features, Best Model Each) ---
+
+PyCaret best model:  lightgbm  (R2=0.6937)
+H2O best model:      StackedEnsemble_AllModels_3_AutoML_1_20260726_171952  (rmse=150.1749502062319)
+
+NOTE: PyCaret sorts/reports R2 (higher=better) by default; H2O here is sorted by RMSE (lower=better). These are DIFFERENT metrics on DIFFERENT scales and are not directly comparable as numbers -- compare algorithm choice, relative ranking behavior, and (if both leaderboards report it) RMSE/MAE side by side instead of R2-vs-RMSE directly. See both leaderboard CSVs for the full metric sets.
+
+--- Task 7: Comparison to Assignment #1 Baseline ---
+
+Baseline model:            XGBoost
+Baseline validation metric: RMSE
+Baseline validation score:  None
+Baseline training time (s): None
+
+NOTE: Assignment #1 baseline values are not yet populated in params.yaml -> automl_compare.assignment1_baseline. Fill these in before finalizing the report; this section cannot be auto-computed since Assignment #1 used a different pipeline/tool.
+
+Populate once Assignment #1 baseline numbers are provided.

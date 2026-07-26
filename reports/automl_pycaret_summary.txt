@@ -14,9 +14,16 @@ RMSE                               151.3458
 R2                                   0.6937
 RMSLE                                0.1594
 MAPE                                 0.1264
-TT (Sec)                              0.194
+TT (Sec)                              0.248
 
-Top-3 features by importance:
+Top-5 features by importance (task 4 reporting):
+  - weight: 1060.0000
+  - age: 827.0000
+  - height: 650.0000
+  - howlong: 407.0000
+  - gender: 56.0000
+
+Top-3 features used for Pass 2 rerun (task 5, fixed-count subset of the list above):
   - weight: 1060.0000
   - age: 827.0000
   - height: 650.0000
@@ -30,7 +37,7 @@ RMSE                           183.8124
 R2                               0.5484
 RMSLE                            0.1993
 MAPE                             0.1597
-TT (Sec)                          0.162
+TT (Sec)                           0.16
 
 Full leaderboards saved to:
   reports/automl_pycaret_leaderboard_all.csv

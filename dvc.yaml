@@ -87,7 +87,8 @@ stages:
       - data/processed/crossfit_features.csv
     params:
       - automl_pycaret.session_id
-      - automl_pycaret.top_n_features
+      - automl_pycaret.top_n_report
+      - automl_pycaret.top_n_rerun
       - automl_pycaret.n_select
       - automl_pycaret.fold
     outs:
@@ -112,13 +113,17 @@ stages:
       - automl_h2o.max_runtime_secs
       - automl_h2o.seed
       - automl_h2o.nfolds
-      - automl_h2o.top_n_features
+      - automl_h2o.top_n_report
+      - automl_h2o.top_n_rerun
     outs:
-      - outputs/automl/h2o_varimp.png
+      - outputs/automl/h2o_varimp_all.png
+      - outputs/automl/h2o_varimp_top.png
       - reports/automl_h2o_summary.txt:
           cache: false
     metrics:
-      - reports/automl_h2o_leaderboard.csv:
+      - reports/automl_h2o_leaderboard_all.csv:
+          cache: false
+      - reports/automl_h2o_leaderboard_top_features.csv:
           cache: false
 
   automl_compare:
@@ -127,7 +132,8 @@ stages:
       - src/automl_compare.py
       - reports/automl_pycaret_leaderboard_all.csv
       - reports/automl_pycaret_leaderboard_top_features.csv
-      - reports/automl_h2o_leaderboard.csv
+      - reports/automl_h2o_leaderboard_all.csv
+      - reports/automl_h2o_leaderboard_top_features.csv
     params:
       - automl_compare.assignment1_baseline
     outs:

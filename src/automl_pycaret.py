@@ -17,7 +17,15 @@ this is the point of the assignment.
 
 Runs TWO AutoML passes:
     1. All appropriate features (full engineered feature set)
-    2. Only the top-3 features by importance from pass 1
+    2. Only the top-N features by importance from pass 1
+       (N = automl_pycaret.top_n_rerun, default 3 -- per the
+       assignment's "use the top three features" instruction)
+
+NOTE on feature counts: the assignment asks for two DIFFERENT numbers:
+  - task 4: report the TOP FIVE features (top_n_report, default 5)
+  - task 5: rerun AutoML using a FIXED number of top features, "top
+    three" if you must pick a fixed count (top_n_rerun, default 3)
+These are deliberately separate params -- do not conflate them.
 
 Outputs:
     reports/automl_pycaret_leaderboard_all.csv
@@ -25,6 +33,8 @@ Outputs:
     reports/automl_pycaret_summary.txt
     outputs/automl/pycaret_feature_importance_all.png
     outputs/automl/pycaret_residuals_all.png
+    outputs/automl/pycaret_feature_importance_top.png
+    outputs/automl/pycaret_residuals_top.png
 
 MLflow: PyCaret's built-in log_experiment=True autolog relies on
 private MLflow internals (_active_run_stack) that break across MLflow
@@ -64,8 +74,9 @@ def load_params() -> dict:
     """Load AutoML parameters from params.yaml, with safe defaults."""
     defaults = {
         "session_id": 42,
-        "top_n_features": 3,
-        "n_select": 3,  # how many top models to keep per compare_models() call
+        "top_n_report": 5,   # task 4: report top-5 features
+        "top_n_rerun": 3,     # task 5: rerun AutoML on top-3 features
+        "n_select": 3,
         "fold": 5,
     }
     if PARAMS_PATH.exists():
@@ -122,7 +133,7 @@ def _patch_pycaret_mlflow_bug():
 def run_compare(data: pd.DataFrame, params: dict, run_label: str):
     """
     Run PyCaret setup() + compare_models() on the given dataframe.
-    Returns (leaderboard_df, best_models_list, pycaret_regression_module).
+    Returns (leaderboard_df, best_models_list).
     """
     # Imported here (not top-of-file) so the rest of the pipeline doesn't
     # require pycaret installed unless this stage actually runs.
@@ -152,7 +163,7 @@ def run_compare(data: pd.DataFrame, params: dict, run_label: str):
     return leaderboard, best_models
 
 
-def log_leaderboard_to_mlflow(leaderboard: pd.DataFrame, run_label: str, params: dict):
+def log_leaderboard_to_mlflow(leaderboard: pd.DataFrame, run_label: str, params: dict, feature_count: int):
     """
     Manually log the top rows of a PyCaret leaderboard to MLflow, one
     MLflow run per model, using the public MLflow API. This replaces
@@ -171,7 +182,7 @@ def log_leaderboard_to_mlflow(leaderboard: pd.DataFrame, run_label: str, params:
                 "run_label": run_label,
                 "session_id": params["session_id"],
                 "fold": params["fold"],
-                "feature_count": leaderboard.attrs.get("feature_count", "n/a"),
+                "feature_count": feature_count,
             })
             metrics = {}
             for col in numeric_cols:
@@ -192,12 +203,13 @@ def save_leaderboard(leaderboard: pd.DataFrame, filename: str):
     print(f"[automl_pycaret] Wrote leaderboard to {path}")
 
 
-def extract_top_features(best_model, n: int) -> list:
+def get_feature_importance_series(best_model) -> pd.Series:
     """
-    Extract top-n feature names by importance from the best model's
-    feature_importances_ (tree/boosting models) or abs(coef_) (linear
-    models). Falls back to an empty list with a warning if neither
-    attribute is available (e.g. for some blended/ensemble models).
+    Return the FULL feature importance series (all features, sorted
+    descending) from the best model's feature_importances_ (tree/boosting
+    models) or abs(coef_) (linear models). Callers slice .head(n) with
+    whatever N they need (5 for reporting, 3 for the rerun) -- this
+    function itself makes no assumption about how many to return.
     """
     from pycaret.regression import get_config
 
@@ -209,13 +221,10 @@ def extract_top_features(best_model, n: int) -> list:
         importances = abs(best_model.coef_)
     else:
         print("[automl_pycaret] WARNING: best model has no feature_importances_ "
-              "or coef_ attribute; cannot extract top features automatically.")
-        return []
+              "or coef_ attribute; cannot extract feature importance.")
+        return pd.Series(dtype=float)
 
-    importance_series = pd.Series(importances, index=x_train.columns)
-    top_features = importance_series.sort_values(ascending=False).head(n).index.tolist()
-    print(f"[automl_pycaret] Top-{n} features by importance: {top_features}")
-    return top_features, importance_series.sort_values(ascending=False)
+    return pd.Series(importances, index=x_train.columns).sort_values(ascending=False)
 
 
 def save_feature_plots(best_model, run_label: str):
@@ -240,7 +249,8 @@ def save_feature_plots(best_model, run_label: str):
         print(f"[automl_pycaret] WARNING: could not generate residuals plot: {exc}")
 
 
-def write_summary(all_leaderboard, top_leaderboard, top_features, importance_series, params):
+def write_summary(all_leaderboard, top_leaderboard, top5_report_features,
+                   top3_rerun_features, importance_series, params):
     """Write a plain-text summary tying together both AutoML passes."""
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     path = REPORTS_DIR / "automl_pycaret_summary.txt"
@@ -256,11 +266,17 @@ def write_summary(all_leaderboard, top_leaderboard, top_features, importance_ser
         "--- Pass 1: All Features ---",
         f"Best model (row 0 of leaderboard):\n{all_leaderboard.iloc[0].to_string()}",
         "",
-        f"Top-{params['top_n_features']} features by importance:",
+        f"Top-{params['top_n_report']} features by importance (task 4 reporting):",
     ]
-    lines.extend(f"  - {feat}: {importance_series[feat]:.4f}" for feat in top_features)
+    lines.extend(f"  - {feat}: {importance_series[feat]:.4f}" for feat in top5_report_features)
     lines.append("")
-    lines.append(f"--- Pass 2: Top-{params['top_n_features']} Features Only ---")
+    lines.append(
+        f"Top-{params['top_n_rerun']} features used for Pass 2 rerun (task 5, "
+        f"fixed-count subset of the list above):"
+    )
+    lines.extend(f"  - {feat}: {importance_series[feat]:.4f}" for feat in top3_rerun_features)
+    lines.append("")
+    lines.append(f"--- Pass 2: Top-{params['top_n_rerun']} Features Only ---")
     lines.append(f"Best model (row 0 of leaderboard):\n{top_leaderboard.iloc[0].to_string()}")
     lines.append("")
     lines.append("Full leaderboards saved to:")
@@ -277,32 +293,34 @@ def main():
     print(f"[automl_pycaret] Params: {params}")
 
     data = load_dataset()
+    all_feature_count = data.shape[1] - 1  # exclude target
 
     # --- Pass 1: all features ---
     all_leaderboard, all_best_models = run_compare(data, params, run_label="all_features")
-    all_leaderboard.attrs["feature_count"] = data.shape[1] - 1  # exclude target
     save_leaderboard(all_leaderboard, "automl_pycaret_leaderboard_all.csv")
-    log_leaderboard_to_mlflow(all_leaderboard, "all_features", params)
+    log_leaderboard_to_mlflow(all_leaderboard, "all_features", params, all_feature_count)
     save_feature_plots(all_best_models[0], run_label="all")
 
-    top_features, importance_series = extract_top_features(
-        all_best_models[0], n=params["top_n_features"]
-    )
-
-    if not top_features:
-        print("[automl_pycaret] ERROR: could not extract top features; "
+    importance_series = get_feature_importance_series(all_best_models[0])
+    if importance_series.empty:
+        print("[automl_pycaret] ERROR: could not extract feature importances; "
               "cannot run Pass 2. Exiting.", file=sys.stderr)
         sys.exit(1)
 
-    # --- Pass 2: top-N features only ---
-    top_data = data[top_features + [TARGET_COL]].copy()
+    top5_report_features = importance_series.head(params["top_n_report"]).index.tolist()
+    top3_rerun_features = importance_series.head(params["top_n_rerun"]).index.tolist()
+    print(f"[automl_pycaret] Top-{params['top_n_report']} features (report): {top5_report_features}")
+    print(f"[automl_pycaret] Top-{params['top_n_rerun']} features (rerun):   {top3_rerun_features}")
+
+    # --- Pass 2: top-N features only (N = top_n_rerun) ---
+    top_data = data[top3_rerun_features + [TARGET_COL]].copy()
     top_leaderboard, top_best_models = run_compare(top_data, params, run_label="top_features")
-    top_leaderboard.attrs["feature_count"] = len(top_features)
     save_leaderboard(top_leaderboard, "automl_pycaret_leaderboard_top_features.csv")
-    log_leaderboard_to_mlflow(top_leaderboard, "top_features", params)
+    log_leaderboard_to_mlflow(top_leaderboard, "top_features", params, len(top3_rerun_features))
     save_feature_plots(top_best_models[0], run_label="top")
 
-    write_summary(all_leaderboard, top_leaderboard, top_features, importance_series, params)
+    write_summary(all_leaderboard, top_leaderboard, top5_report_features,
+                  top3_rerun_features, importance_series, params)
 
     print("\n[automl_pycaret] COMPLETE.")
 

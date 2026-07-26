@@ -39,18 +39,20 @@ experiments:
     learning_rate: 0.05
 automl_pycaret:
   session_id: 42
-  top_n_features: 3
+  top_n_report: 5
+  top_n_rerun: 3
   n_select: 3
   fold: 5
 automl_h2o:
   max_runtime_secs: 300
   seed: 42
   nfolds: 5
-  top_n_features: 5
+  top_n_report: 5
+  top_n_rerun: 3
 automl_compare:
   assignment1_baseline:
-    model_name: FILL_IN
-    validation_metric_name: FILL_IN
+    model_name: XGBoost
+    validation_metric_name: RMSE
     validation_score: null
     training_time_seconds: null
     notes: 'Populate once Assignment #1 baseline numbers are provided.'

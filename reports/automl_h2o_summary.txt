@@ -2,24 +2,44 @@ H2O AutoML Summary
 ==================================================
 Target: total_lift
 Leakage columns excluded: ['deadlift', 'candj', 'snatch', 'backsq']
-Seed: 42   nfolds: 5   max_runtime_secs: 300
-Wall-clock AutoML run time: 301.3s
+Seed: 42   nfolds: 5   max_runtime_secs (per pass): 300
 
-Best model: StackedEnsemble_AllModels_3_AutoML_1_20260725_95621 (stackedensemble)
+--- Pass 1: All Features ---
+Wall-clock AutoML run time: 302.9s
+Best model: StackedEnsemble_AllModels_3_AutoML_1_20260726_171952 (stackedensemble)
 
 Top 3 rows of leaderboard (sorted by RMSE):
-                                                 model_id        rmse           mse         mae     rmsle  mean_residual_deviance
-0     StackedEnsemble_AllModels_3_AutoML_1_20260725_95621  150.166940  22550.109781  117.312442  0.157806            22550.109781
-1     StackedEnsemble_AllModels_2_AutoML_1_20260725_95621  150.234933  22570.535234  117.385871  0.157899            22570.535234
-2  StackedEnsemble_BestOfFamily_4_AutoML_1_20260725_95621  150.247026  22574.168759  117.401141  0.157905            22574.168759
-
-NOTE: the best model (StackedEnsemble_AllModels_3_AutoML_1_20260725_95621, stackedensemble) is a Stacked Ensemble and does not expose native variable importance -- this is expected H2O behavior, not an error. Feature importance below is instead taken from the best-ranked individual model that does support it: GBM_5_AutoML_1_20260725_95621 (leaderboard rank 4).
+                                                  model_id        rmse           mse         mae     rmsle  mean_residual_deviance  training_time_ms  predict_time_per_row_ms
+0     StackedEnsemble_AllModels_3_AutoML_1_20260726_171952  150.174950  22552.515669  117.324482  0.157825            22552.515669               742                 0.050776
+1     StackedEnsemble_AllModels_2_AutoML_1_20260726_171952  150.197365  22559.248554  117.354523  0.157858            22559.248554              1293                 0.041231
+2  StackedEnsemble_BestOfFamily_3_AutoML_1_20260726_171952  150.217439  22565.278964  117.388308  0.157901            22565.278964               625                 0.017952
 
 Top-5 features by variable importance:
+  (best model StackedEnsemble_AllModels_3_AutoML_1_20260726_171952 is a stackedensemble with no native variable importance -- expected H2O behavior; features shown are from GBM_5_AutoML_1_20260726_171952, leaderboard rank 3)
   - gender
   - weight
   - height
   - age
   - howlong
 
-Full leaderboard saved to: reports/automl_h2o_leaderboard.csv
+Features used for Pass 2 rerun (top-3): ['gender', 'weight', 'height']
+
+--- Pass 2: Top-3 Features Only ---
+Wall-clock AutoML run time: 302.6s
+Best model: StackedEnsemble_AllModels_3_AutoML_2_20260726_172537 (stackedensemble)
+
+Top 3 rows of leaderboard (sorted by RMSE):
+                                                  model_id        rmse           mse         mae     rmsle  mean_residual_deviance  training_time_ms  predict_time_per_row_ms
+0     StackedEnsemble_AllModels_3_AutoML_2_20260726_172537  171.081567  29268.902625  135.125622  0.179388            29268.902625               594                 0.022548
+1  StackedEnsemble_BestOfFamily_4_AutoML_2_20260726_172537  171.120321  29282.164243  135.167475  0.179451            29282.164243               206                 0.019386
+2             GBM_grid_1_AutoML_2_20260726_172537_model_12  171.173256  29300.283578  135.217985  0.179588            29300.283578               510                 0.010505
+
+Top-5 features by variable importance (Pass 2 model):
+  (best model StackedEnsemble_AllModels_3_AutoML_2_20260726_172537 is a stackedensemble with no native variable importance -- expected H2O behavior; features shown are from GBM_grid_1_AutoML_2_20260726_172537_model_12, leaderboard rank 2)
+  - gender
+  - weight
+  - height
+
+Full leaderboards saved to:
+  reports/automl_h2o_leaderboard_all.csv
+  reports/automl_h2o_leaderboard_top_features.csv
