@@ -99,7 +99,10 @@ athletes_dvc_project/
 │   ├── train.py                 # model training + MLflow logging/registration
 │   ├── evaluate.py              # evaluation + MLflow metric logging
 │   ├── run_experiments.py       # runs the 2x2 experiment grid
-│   └── compare_versions.py      # v1 vs v2 comparison report
+│   ├── compare_versions.py      # v1 vs v2 comparison report
+│   ├── automl_pycaret.py        # Assignment #3: PyCaret AutoML (all + top features)
+│   ├── automl_h2o.py            # Assignment #3: H2O AutoML (all + top features)
+│   └── automl_compare.py        # Assignment #3: cross-platform + baseline comparison
 │
 ├── feature_store.yaml
 ├── dvc.yaml / dvc.lock
@@ -309,6 +312,161 @@ already-baseline-cleaned data, not the raw data — so its mean/std are not
 skewed by the physically-impossible values the baseline step already
 removed. This ordering (fixed-threshold filter → z-score filter) is
 intentional.
+
+---
+
+## Assignment #3: AutoML Workflow (PyCaret + H2O)
+
+This section documents the AutoML addendum to the pipeline above. Unlike
+Assignment #2, AutoML is explicitly **required** here — no algorithms are
+hand-picked; PyCaret and H2O AutoML each search their own model libraries
+automatically.
+
+### Setup (additional dependencies)
+
+The base `requirements.txt` install (see Setup above) now also includes:
+
+```
+pycaret==3.3.2
+h2o>=3.44.0
+```
+
+H2O additionally requires a local Java runtime (JDK 11+) on your machine —
+check with `java -version` before running the H2O stage; install a JDK
+first if missing. Both PyCaret and H2O AutoML run **fully locally**, with
+no cloud account or credentials required.
+
+Install (or reinstall from the updated `requirements.txt`):
+
+```bash
+pip install -r requirements.txt
+```
+
+> **Known issue — PyCaret/MLflow compatibility:** PyCaret's built-in
+> `setup(log_experiment=True)` MLflow autologger crashes on newer MLflow
+> versions due to an open PyCaret bug
+> ([pycaret/pycaret#4100](https://github.com/pycaret/pycaret/issues/4100)):
+> PyCaret's internal `_set_up_logging()` unconditionally calls a helper
+> that assumes MLflow's private `_active_run_stack` is a plain list, which
+> newer MLflow releases changed to a thread-safe object with no `.copy()`
+> method. This crashes `setup()` regardless of what `log_experiment` is
+> set to. `src/automl_pycaret.py` works around this with a targeted
+> monkeypatch (`_patch_pycaret_mlflow_bug()`) applied before `setup()` is
+> called; PyCaret's own MLflow logging is disabled
+> (`log_experiment=False`) and replaced with manual logging via MLflow's
+> public API instead. No action needed to run the pipeline — this is
+> handled automatically — but it's documented here since it affects how
+> MLflow experiment data for PyCaret runs is produced.
+
+### Dataset used
+
+Same processed, feature-engineered dataset as Assignment #2
+(`data/processed/crossfit_features.csv`) — **not** raw data. See
+"Dataset Preprocessing" above for how it was produced. Both AutoML scripts
+drop the same leakage columns as `train.py` (`deadlift`, `candj`, `snatch`,
+`backsq`, `athlete_id`, `event_timestamp`) before AutoML ever sees the
+data. After these drops, 5 predictor features remain: `gender`, `age`,
+`height`, `weight`, `howlong` (this matches the Feast `v1` feature set,
+not the larger `v2` set — the engineered survey features were not present
+in this particular `crossfit_features.csv` snapshot).
+
+### Pipeline stages
+
+Two new DVC stages run each AutoML platform, plus a comparison stage:
+
+```
+feature_engineering → automl_pycaret ┐
+                    → automl_h2o     ├→ automl_compare
+```
+
+| Stage | Script | What it does |
+|-------|--------|---------------|
+| `automl_pycaret` | `src/automl_pycaret.py` | Two PyCaret passes: all features, then top-3 features (by importance). Saves leaderboards, feature-importance/residual plots, and a summary. |
+| `automl_h2o` | `src/automl_h2o.py` | Same two-pass structure using H2O AutoML. Falls back to the best non-ensemble model for variable importance when the leaderboard-topping model is a Stacked Ensemble (which has no native `varimp()`). |
+| `automl_compare` | `src/automl_compare.py` | Reads both platforms' leaderboards; produces top-3-by-score and top-3-by-speed tables for both feature sets, plus the Assignment #1 baseline comparison. |
+
+Run the full AutoML workflow:
+
+```bash
+dvc repro automl_compare
+```
+
+This is also wired into `run_all.py`, so `python run_all.py` runs it as
+part of the full end-to-end pipeline (after the Assignment #2 stages).
+
+**Runtime note:** `automl_h2o` runs two full H2O AutoML searches (all
+features, then top features), each budgeted `automl_h2o.max_runtime_secs`
+(default 300s) via `params.yaml` — expect ~10 minutes total for this stage
+alone. `automl_pycaret` is faster (PyCaret has no time cap; it simply
+trains its full default algorithm library, both passes typically complete
+in under a minute total for this dataset size).
+
+### Configuration (`params.yaml`)
+
+```yaml
+automl_pycaret:
+  session_id: 42        # same seed used throughout the project
+  top_n_report: 5         # task 4: top-5 features to report
+  top_n_rerun: 3            # task 5: fixed feature count for the rerun
+  n_select: 3                 # how many top models compare_models() returns
+  fold: 5                        # cross-validation folds
+
+automl_h2o:
+  max_runtime_secs: 300   # per pass (all-features AND top-features each get this budget)
+  seed: 42
+  nfolds: 5
+  top_n_report: 5
+  top_n_rerun: 3
+
+automl_compare:
+  assignment1_baseline:      # Assignment #1 Part A numbers, for Section 7 comparison
+    model_name: ...
+    validation_metric_name: ...
+    validation_score: ...
+    training_time_seconds: ...
+```
+
+### Platform classification
+
+PyCaret is classified as **low-code**: no graphical UI (code is required
+to call `setup()`/`compare_models()`), but a single function call replaces
+what would otherwise be a hand-written loop over ~20 algorithms with
+manual cross-validation and metric computation. Since neither PyCaret nor
+H2O AutoML used here is a graphical no-code tool, there is no setup UI to
+screenshot — the evidence trail is instead the console leaderboard output,
+exported CSV leaderboards, and generated feature-importance/residual
+plots, all referenced in the full report.
+
+### Outputs
+
+```
+reports/
+  automl_pycaret_leaderboard_all.csv
+  automl_pycaret_leaderboard_top_features.csv
+  automl_pycaret_summary.txt
+  automl_h2o_leaderboard_all.csv
+  automl_h2o_leaderboard_top_features.csv
+  automl_h2o_summary.txt
+  automl_comparison.txt          # cross-platform + Assignment #1 baseline comparison
+
+outputs/automl/
+  pycaret_feature_importance_all.png
+  pycaret_residuals_all.png
+  pycaret_feature_importance_top.png
+  pycaret_residuals_top.png
+  h2o_varimp_all.png
+  h2o_varimp_top.png
+```
+
+MLflow experiments: `crossfit-automl-pycaret` and `crossfit-automl-h2o`
+(separate from Assignment #2's `crossfit-total-lift` experiment).
+
+**Full written report:** `AutoML_Workflow_Report.docx` — covers all 9
+required tasks (dataset setup, platform configuration, all-features run,
+data insights/feature importance, validation-score comparison, speed
+comparison, Assignment #1 baseline comparison, platform mode assessment,
+and the H2O repeat) with figures pulled directly from the CSVs/summaries
+above, plus a dedicated assumptions/limitations section.
 
 ---
 
